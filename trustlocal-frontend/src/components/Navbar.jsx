@@ -1,11 +1,21 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { ShieldCheck, Moon, Sun, User } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ShieldCheck, Moon, Sun, User, UserPlus, LogOut, LayoutDashboard } from 'lucide-react';
+import { useAuth } from '../context/AuthContext'; // Auth context import kiya
 
 const Navbar = ({ darkMode, setDarkMode }) => {
-  // Website ka main accent color badalne ke liye
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  // Color change function with LocalStorage
   const changeThemeColor = (color) => {
     document.documentElement.style.setProperty('--accent', color);
+    localStorage.setItem('accentColor', color);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
   };
 
   const THEMES = [
@@ -17,17 +27,17 @@ const Navbar = ({ darkMode, setDarkMode }) => {
   ];
 
   return (
-    <nav className="sticky top-0 z-50 backdrop-blur-md bg-white/80 dark:bg-[#111111]/80 border-b border-slate-200 dark:border-slate-800 px-6 py-4 transition-all duration-300">
+    <nav className="sticky top-0 z-50 backdrop-blur-md bg-white/80 dark:bg-[#0a0a0a]/80 border-b border-slate-200 dark:border-slate-800 px-6 py-4 transition-all duration-300">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         
-        {/* Logo Section */}
+        {/* Logo */}
         <Link to="/" className="text-2xl font-black flex items-center gap-2 transition-colors duration-300" style={{ color: 'var(--accent)' }}>
           <ShieldCheck size={28} /> TrustLocal
         </Link>
 
-        <div className="flex items-center gap-4 md:gap-8">
+        <div className="flex items-center gap-3 md:gap-6">
           
-          {/* Multi-Color Theme Picker */}
+          {/* Multi-Color Picker */}
           <div className="hidden sm:flex items-center gap-2 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-full border border-slate-200 dark:border-slate-700">
             {THEMES.map((t) => (
               <button
@@ -35,26 +45,58 @@ const Navbar = ({ darkMode, setDarkMode }) => {
                 onClick={() => changeThemeColor(t.hex)}
                 className="w-5 h-5 rounded-full border-2 border-white dark:border-slate-900 shadow-sm hover:scale-125 transition-all"
                 style={{ backgroundColor: t.hex }}
+                title={t.name}
               />
             ))}
           </div>
 
-          {/* LIGHT/DARK TOGGLE BUTTON */}
+          {/* Dark Mode Toggle */}
           <button 
             onClick={() => setDarkMode(!darkMode)} 
-            className="p-2.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-yellow-400 hover:scale-110 transition-all"
+            className="p-2.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-yellow-400 hover:scale-110 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700"
           >
             {darkMode ? <Sun size={20} /> : <Moon size={20} />}
           </button>
           
-          <div className="flex items-center gap-2">
-            <Link 
-              to="/auth" 
-              className="text-white px-6 py-2.5 rounded-xl font-bold shadow-lg hover:opacity-90 transition flex items-center gap-2"
-              style={{ backgroundColor: 'var(--accent)' }}
-            >
-              <User size={18} /> Login
-            </Link>
+          {/* Auth Conditional Rendering */}
+          <div className="flex items-center gap-3 border-l border-slate-200 dark:border-slate-800 pl-3 md:pl-6">
+            {user ? (
+              // Agar user logged in hai
+              <div className="flex items-center gap-4">
+                <Link 
+                  to={user.role === 'provider' ? '/provider-dashboard' : '/user-dashboard'}
+                  className="hidden md:flex items-center gap-2 text-sm font-black text-slate-600 dark:text-slate-300 hover:opacity-80"
+                >
+                  <LayoutDashboard size={18} /> My Dashboard
+                </Link>
+                
+                <button 
+                  onClick={handleLogout}
+                  className="p-2.5 rounded-xl bg-red-50 dark:bg-red-900/10 text-red-500 hover:bg-red-100 transition-colors"
+                  title="Logout"
+                >
+                  <LogOut size={20} />
+                </button>
+              </div>
+            ) : (
+              // Agar user logged in nahi hai
+              <>
+                <Link 
+                  to="/login" 
+                  className="hidden md:flex items-center gap-2 font-bold text-slate-600 dark:text-slate-300 hover:opacity-80 transition"
+                >
+                  <User size={18} /> Sign In
+                </Link>
+                
+                <Link 
+                  to="/register" 
+                  className="text-white px-5 py-2.5 rounded-xl font-bold shadow-lg hover:opacity-90 transition flex items-center gap-2 text-sm"
+                  style={{ backgroundColor: 'var(--accent)' }}
+                >
+                  <UserPlus size={18} /> Join Now
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>

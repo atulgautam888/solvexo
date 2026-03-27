@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  // 1. Class-based dark mode enable (Manual toggle ke liye zaruri hai)
+  // 1. Class-based dark mode enable (Manual toggle ke liye)
   darkMode: 'class', 
   
   content: [
@@ -10,23 +10,34 @@ export default {
   
   theme: {
     extend: {
-      // 2. Custom Brand Colors (TrustLocal Theme)
+      // 2. Custom Brand Colors with CSS Variable Support
       colors: {
-        accent: '#aa3bff', // Aapka signature VIP Purple
-        darkBg: '#111111', // Pure Dark mode background
+        // Ab 'accent' variable se connect hai, jo Navbar se control hoga
+        accent: 'var(--accent)', 
+        darkBg: '#111111', 
         lightBg: '#ffffff',
+        // Dark mode ke liye specific slate colors
+        cardDark: '#161616',
       },
       
       // 3. Ultra-Smooth Animations
       animation: {
         'bounce-slow': 'bounce 3s linear infinite',
         'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'shimmer': 'shimmer 2s linear infinite',
       },
 
-      // 4. Custom Glassmorphism Shadows
+      keyframes: {
+        shimmer: {
+          '0%': { backgroundPosition: '-200% 0' },
+          '100%': { backgroundPosition: '200% 0' },
+        },
+      },
+
+      // 4. Custom VIP Shadows using the accent variable
       boxShadow: {
-        'vip': '0 32px 64px -16px rgba(170, 59, 255, 0.15)',
-        'vip-hover': '0 32px 64px -16px rgba(170, 59, 255, 0.25)',
+        'vip': '0 20px 40px -12px rgba(var(--accent-rgb), 0.2)',
+        'vip-hover': '0 30px 60px -12px rgba(var(--accent-rgb), 0.3)',
       }
     },
   },
