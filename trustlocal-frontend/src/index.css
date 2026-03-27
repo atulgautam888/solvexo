@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+:root {
+  /* Default Primary Color (Purple) */
+  --brand-primary: #aa3bff; 
+  --bg-page: #ffffff;
+  --text-main: #08060d;
+}
+
+.dark {
+  --bg-page: #111111;
+  --text-main: #f3f4f6;
+}
+
+@theme {
+  --color-accent: var(--brand-primary);
+}
+
+body {
+  background-color: var(--bg-page);@import "tailwindcss";
+
+/* 1. Tailwind v4 Theme Configuration */
+@theme {
+  --color-accent: var(--brand-primary);
+}
+
+/* 2. Global Variables */
+:root {
+  --brand-primary: #aa3bff; 
+  --bg-page: #ffffff;
+  --text-main: #08060d;
+  color-scheme: light; /* Browser ko light mode signal bhejna */
+}
+
+/* 3. Dark Mode Override */
+.dark {
+  --bg-page: #111111;
+  --text-main: #f3f4f6;
+  color-scheme: dark; /* Browser ko dark mode signal bhejna */
+}
+
+/* 4. Base Styles with Smooth Transitions */
+@layer base {
+  body {
+    background-color: var(--bg-page);
+    color: var(--text-main);
+    transition-property: background-color, color, border-color;
+    transition-duration: 500ms;
+    transition-timing-function: ease-in-out;
+    @apply font-sans antialiased;
+  }
+}
+
+/* 5. Custom VIP Glass Navigation  */
+.glass-nav {
+  @apply sticky top-0 z-50 backdrop-blur-xl border-b transition-all duration-300;
+  background-color: rgba(255, 255, 255, 0.7);
+  border-color: rgba(0, 0, 0, 0.05);
+}
+
+.dark .glass-nav {
+  background-color: rgba(17, 17, 17, 0.7);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+  color: var(--text-main);
+  transition: all 0.3s ease;
+}
