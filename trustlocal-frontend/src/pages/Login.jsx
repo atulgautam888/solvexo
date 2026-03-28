@@ -6,56 +6,41 @@ import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login } = useAuth(); // Context se real login function nikal rahe hain
   
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(''); // Error dikhane ke liye state
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (errorMsg) setErrorMsg(''); // Type karte waqt error hata do
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setErrorMsg('');
 
     try {
-      // Mock Login Logic - Debugging for multiple roles
-      console.log("Logging in with:", formData);
-      const emailLower = formData.email.toLowerCase();
+      // 1. Context ke zariye API call karna
+      const user = await login(formData.email, formData.password);
 
-      // ROLE DETECTION LOGIC (Temporary for Frontend Phase)
-      let detectedRole = 'user';
-      if (emailLower.includes('admin')) {
-        detectedRole = 'admin';
-      } else if (emailLower.includes('provider')) {
-        detectedRole = 'provider';
-      }
-
-      const mockUserData = {
-        name: detectedRole === 'admin' ? "System Admin" : 
-              detectedRole === 'provider' ? "Expert Provider" : "Verified Customer",
-        email: formData.email,
-        role: detectedRole,
-        token: "fake-jwt-token"
-      };
-
-      login(mockUserData);
-
-      // --- SMART REDIRECT ---
-      if (detectedRole === 'admin') {
+      // 2. REAL Role based redirection (Ab koi email check nahi, direct database role)
+      if (user.role === 'admin') {
         navigate('/admin-dashboard');
-      } else if (detectedRole === 'provider') {
+      } else if (user.role === 'provider') {
         navigate('/provider-dashboard');
       } else {
         navigate('/user-dashboard');
       }
 
     } catch (error) {
-      alert("Login failed! Please check your credentials.");
+      // Backend se jo error message aayega (e.g. "Invalid Credentials") wo yahan dikhega
+      setErrorMsg(error);
     } finally {
       setIsSubmitting(false);
     }
@@ -75,6 +60,17 @@ const Login = () => {
           <h2 className="text-3xl font-black italic tracking-tighter">Welcome Back</h2>
           <p className="text-slate-500 text-sm mt-2 font-medium italic">Bhopal's experts are just one click away.</p>
         </div>
+
+        {/* Error Message Alert */}
+        {errorMsg && (
+          <motion.div 
+            initial={{ opacity: 0, x: -10 }} 
+            animate={{ opacity: 1, x: 0 }}
+            className="mb-6 p-4 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 rounded-2xl text-red-500 text-xs font-bold text-center"
+          >
+            {errorMsg}
+          </motion.div>
+        )}
 
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="relative group">

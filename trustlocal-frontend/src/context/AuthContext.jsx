@@ -1,50 +1,62 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import API from '../api/axios';
 
-// Context Create karna
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Check if user is already logged in (on Page Load)
   useEffect(() => {
-    const savedUser = localStorage.getItem('trustLocalUser');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
+    const savedData = localStorage.getItem('trustLocalUser');
+    if (savedData) {
+      try {
+        const parsedData = JSON.parse(savedData);
+        setUser(parsedData.user); 
+      } catch (err) {
+        localStorage.removeItem('trustLocalUser');
+      }
     }
     setLoading(false);
   }, []);
 
-  // Login Function
-  const login = (userData) => {
-    // userData mein: { name, email, role: 'user' | 'provider', token }
-    setUser(userData);
-    localStorage.setItem('trustLocalUser', JSON.stringify(userData));
+  const login = async (email, password) => {
+    try {
+      const response = await API.post('/auth/login', { email, password });
+      // Backend should return { token, user: { name, role, ... } }
+      localStorage.setItem('trustLocalUser', JSON.stringify(response.data));
+      setUser(response.data.user);
+      return response.data.user;
+    } catch (error) {
+      throw error.response?.data?.message || "Login failed";
+    }
   };
 
-  // Logout Function
+  const register = async (userData) => {
+    try {
+      const response = await API.post('/auth/register', userData);
+      localStorage.setItem('trustLocalUser', JSON.stringify(response.data));
+      setUser(response.data.user);
+      return response.data.user;
+    } catch (error) {
+      throw error.response?.data?.message || "Registration failed";
+    }
+  };
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem('trustLocalUser');
-    window.location.href = '/login'; // Redirect to login
+    window.location.href = '/login';
   };
 
-  // Helper: Check if User is Provider
-  const isProvider = user?.role === 'provider';
-
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading, isProvider }}>
+    <AuthContext.Provider value={{ user, login, register, logout, loading, 
+      isProvider: user?.role === 'provider',
+      isAdmin: user?.role === 'admin' 
+    }}>
       {!loading && children}
     </AuthContext.Provider>
   );
 };
 
-// Custom Hook use karne ke liye
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
-};
+export const useAuth = () => useContext(AuthContext);
