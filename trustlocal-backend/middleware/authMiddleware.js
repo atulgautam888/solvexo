@@ -1,13 +1,14 @@
 const jwt = require('jsonwebtoken');
 
 module.exports = (req, res, next) => {
-  const authHeader = req.header('Authorization');
-  
-  // Check if header exists and starts with Bearer
+  // 1. Header uthao
+  const authHeader = req.headers['authorization'] || req.header('Authorization');
+
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ message: "No token, authorization denied" });
   }
 
+  // 2. Token alag karo
   const token = authHeader.split(' ')[1];
 
   try {
@@ -15,7 +16,7 @@ module.exports = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (err) {
-    console.error("JWT Error:", err.message);
+    console.error("JWT Verify Error:", err.message);
     res.status(401).json({ message: "Token is not valid" });
   }
 };

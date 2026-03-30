@@ -23,7 +23,6 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const response = await API.post('/auth/login', { email, password });
-      // Backend should return { token, user: { name, role, ... } }
       localStorage.setItem('trustLocalUser', JSON.stringify(response.data));
       setUser(response.data.user);
       return response.data.user;
@@ -50,7 +49,13 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading, 
+    <AuthContext.Provider value={{ 
+      user, 
+      setUser, // <--- YEH ADD KIYA: Ab ye 'Profile.jsx' mein error nahi dega
+      login, 
+      register, 
+      logout, 
+      loading, 
       isProvider: user?.role === 'provider',
       isAdmin: user?.role === 'admin' 
     }}>

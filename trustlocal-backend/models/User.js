@@ -11,9 +11,13 @@ const UserSchema = new mongoose.Schema({
   },
   category: { 
     type: String, 
-    default: '' // Sirf providers ke liye (Electrician, Plumber, etc.)
+    default: '' 
   },
-  isVerified: { type: Boolean, default: false }, // Admin approve karega tab true hoga
+  image: { 
+    type: String, 
+    default: '' 
+  },
+  isVerified: { type: Boolean, default: false }, 
   createdAt: { type: Date, default: Date.now }
 });
 

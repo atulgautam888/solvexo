@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, User, Briefcase, UserCircle, ChevronDown, Loader2, ArrowRight } from 'lucide-react';
-import { useAuth } from '../context/AuthContext'; // AuthContext import kiya
+import { useAuth } from '../context/AuthContext';
 
 const Register = () => {
   const navigate = useNavigate();
-  const { register } = useAuth(); // Register function context se nikala
+  const { register } = useAuth();
   
+  // Role state define ki hai
   const [role, setRole] = useState('user'); 
   const [formData, setFormData] = useState({
     name: '',
@@ -32,16 +33,16 @@ const Register = () => {
     setErrorMsg('');
 
     try {
-      // Backend ko data bhej rahe hain
+      // FIX: Yahan 'role' explicitly bhej rahe hain jo state se aa raha hai
       const data = await register({
         name: formData.name,
         email: formData.email,
         password: formData.password,
-        role: role,
+        role: role, // Current selected role
         category: role === 'provider' ? formData.category : ''
       });
 
-      // Role ke hisaab se sahi dashboard par redirect
+      // Backend se aane wale REAL role ke basis par redirect
       if (data.role === 'provider') {
         navigate('/provider-dashboard');
       } else {
@@ -49,7 +50,7 @@ const Register = () => {
       }
 
     } catch (error) {
-      setErrorMsg(error); // Backend se aane wala error (e.g. "User already exists")
+      setErrorMsg(error);
     } finally {
       setIsSubmitting(false);
     }
@@ -63,28 +64,27 @@ const Register = () => {
       >
         <div className="text-center mb-8">
           <h2 className="text-3xl font-black italic tracking-tighter">Join TrustLocal</h2>
-          <p className="text-slate-500 text-sm mt-2 font-medium italic">Be part of Bhopal's trusted network.</p>
+          <p className="text-slate-500 text-sm mt-2 font-medium italic">Bhopal's Trusted Service Network</p>
         </div>
 
-        {/* --- ERROR ALERT --- */}
         {errorMsg && (
           <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 rounded-2xl text-red-500 text-xs font-bold text-center italic">
             {errorMsg}
           </div>
         )}
 
-        {/* --- ROLE SELECTOR --- */}
+        {/* --- ROLE SELECTOR (FIXED LOGIC) --- */}
         <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl mb-8 border border-slate-200 dark:border-slate-700">
           <button 
             type="button"
-            onClick={() => setRole('user')}
+            onClick={() => { setRole('user'); setErrorMsg(''); }} // Role update
             className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all ${role === 'user' ? 'bg-white dark:bg-slate-700 shadow-sm text-[var(--accent)]' : 'text-slate-500'}`}
           >
             <UserCircle size={18} /> Customer
           </button>
           <button 
             type="button"
-            onClick={() => setRole('provider')}
+            onClick={() => { setRole('provider'); setErrorMsg(''); }} // Role update
             className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all ${role === 'provider' ? 'bg-white dark:bg-slate-700 shadow-sm text-[var(--accent)]' : 'text-slate-500'}`}
           >
             <Briefcase size={18} /> Provider
@@ -92,9 +92,8 @@ const Register = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Name Field */}
           <div className="relative group">
-            <User className="absolute left-4 top-4 text-slate-400 group-focus-within:text-[var(--accent)] transition-colors" size={20} />
+            <User className="absolute left-4 top-4 text-slate-400 group-focus-within:text-[var(--accent)]" size={20} />
             <input 
               name="name" type="text" placeholder="Full Name" required
               className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-800 rounded-2xl outline-none focus:ring-2 transition font-bold"
@@ -103,10 +102,15 @@ const Register = () => {
             />
           </div>
 
-          {/* SERVICE CATEGORY (Provider only) */}
-          <AnimatePresence>
+          <AnimatePresence mode="wait">
             {role === 'provider' && (
-              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="relative">
+              <motion.div 
+                key="category-select"
+                initial={{ opacity: 0, height: 0 }} 
+                animate={{ opacity: 1, height: 'auto' }} 
+                exit={{ opacity: 0, height: 0 }} 
+                className="relative overflow-hidden"
+              >
                 <Briefcase className="absolute left-4 top-4 text-slate-400" size={20} />
                 <select 
                   name="category" required
@@ -124,9 +128,8 @@ const Register = () => {
             )}
           </AnimatePresence>
 
-          {/* Email */}
           <div className="relative group">
-            <Mail className="absolute left-4 top-4 text-slate-400 group-focus-within:text-[var(--accent)] transition-colors" size={20} />
+            <Mail className="absolute left-4 top-4 text-slate-400 group-focus-within:text-[var(--accent)]" size={20} />
             <input 
               name="email" type="email" placeholder="Email Address" required
               className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-800 rounded-2xl outline-none focus:ring-2 transition font-bold"
@@ -135,9 +138,8 @@ const Register = () => {
             />
           </div>
 
-          {/* Password */}
           <div className="relative group">
-            <Lock className="absolute left-4 top-4 text-slate-400 group-focus-within:text-[var(--accent)] transition-colors" size={20} />
+            <Lock className="absolute left-4 top-4 text-slate-400 group-focus-within:text-[var(--accent)]" size={20} />
             <input 
               name="password" type="password" placeholder="Password" required
               className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-800 rounded-2xl outline-none focus:ring-2 transition font-bold"

@@ -1,13 +1,11 @@
 const mongoose = require('mongoose');
 
 const BookingSchema = new mongoose.Schema({
-  // Kaunsa customer book kar raha hai
   customer: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
-  // Kaunsa provider service dega
   provider: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -20,11 +18,11 @@ const BookingSchema = new mongoose.Schema({
   },
   serviceDetails: {
     type: String,
-    required: true // Udaharan: "Ceiling fan installation"
+    required: true 
   },
   address: {
     type: String,
-    required: true // Bhopal ka specific area
+    required: true 
   },
   price: {
     type: Number,
@@ -36,8 +34,23 @@ const BookingSchema = new mongoose.Schema({
     default: 'pending'
   },
   scheduledDate: {
-    type: String, // Hum string rakhenge "2026-03-30" format ke liye
+    type: String, 
     required: true
+  },
+  // --- Naye Fields Ratings Ke Liye ---
+  rating: {
+    type: Number,
+    min: 1,
+    max: 5,
+    default: null
+  },
+  review: {
+    type: String,
+    default: ""
+  },
+  isReviewed: {
+    type: Boolean,
+    default: false
   },
   createdAt: {
     type: Date,
