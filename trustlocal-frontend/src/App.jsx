@@ -14,6 +14,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import AdminDashboard from './pages/AdminDashboard';
 import Profile from './pages/Profile';
 import ProviderProfile from './pages/ProviderProfile';
+import About from './pages/About';
 
 // --- PROTECTED ROUTE COMPONENT ---
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -65,6 +66,7 @@ export default function App() {
             <Route path="/services" element={<Services />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/provider/:id" element={<ProviderProfile />} />
+            <Route path="/about" element={<About />} />
 
             {/* PROTECTED USER ROUTES */}
             <Route path="/user-dashboard" element={

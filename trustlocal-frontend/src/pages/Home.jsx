@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Link, useNavigate } from 'react-router-dom'; // useNavigate add kiya
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   ShieldCheck, Zap, Search, MapPin, ChevronRight, 
   Users, Award, Loader2, ArrowRight 
@@ -17,19 +17,32 @@ const SERVICES = [
 
 const Home = () => {
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState(""); // Search state
-  const [topProviders, setTopProviders] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [topProviders, setTopProviders] = useState([]); // Initialized as array
   const [loading, setLoading] = useState(true);
 
-  // 1. Fetch Top Rated Experts Logic
   useEffect(() => {
     const fetchTopExperts = async () => {
       try {
         setLoading(true);
         const res = await API.get('/auth/top-providers');
-        setTopProviders(res.data);
+        
+        /**
+         * FIX: Defensive check for API structure.
+         * If your backend returns { data: [...] } or just [...]
+         */
+        const data = res.data;
+        if (Array.isArray(data)) {
+          setTopProviders(data);
+        } else if (data && Array.isArray(data.providers)) {
+          setTopProviders(data.providers);
+        } else {
+          console.error("API structure unexpected. Expected array but got:", data);
+          setTopProviders([]); // Fallback to empty array to prevent .map() crash
+        }
       } catch (err) {
-        console.error("Top Providers Fetch Error");
+        console.error("Top Providers Fetch Error:", err);
+        setTopProviders([]); // Ensure state remains an array on error
       } finally {
         setLoading(false);
       }
@@ -37,11 +50,9 @@ const Home = () => {
     fetchTopExperts();
   }, []);
 
-  // 2. Search Handler Function
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      // Encode query to handle spaces and special chars
       navigate(`/services?search=${encodeURIComponent(searchQuery.trim())}`);
     } else {
       navigate('/services');
@@ -100,7 +111,6 @@ const Home = () => {
             The reliable alternative to unverified local contacts. Get transparent pricing & professional service in Bhopal.
           </motion.p>
 
-          {/* --- FUNCTIONAL SEARCH BAR --- */}
           <motion.form 
             onSubmit={handleSearch}
             variants={itemVars} 
@@ -130,7 +140,6 @@ const Home = () => {
           </motion.form>
         </motion.div>
 
-        {/* Right: Interactive Grid */}
         <motion.div variants={containerVars} className="grid grid-cols-2 gap-6">
           {SERVICES.map((s) => (
             <Link to={s.path} key={s.id}>
@@ -172,7 +181,7 @@ const Home = () => {
             </p>
           </div>
           <Link to="/services" className="flex items-center gap-2 text-[var(--accent)] font-black uppercase tracking-tighter text-sm underline italic">
-             View All Professionals <ArrowRight size={18}/>
+              View All Professionals <ArrowRight size={18}/>
           </Link>
         </header>
 
@@ -183,19 +192,28 @@ const Home = () => {
             </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 italic">
-            {topProviders.map((p) => (
-              <ServiceCard 
-                key={p.id} 
-                provider={{
-                  ...p,
-                  rating: p.avgRating || "0.0",
-                  totalReviews: p.totalReviews || 0,
-                  location: "Bhopal Hub",
-                  isVerified: true,
-                  image: p.image || "https://images.unsplash.com/photo-1540553016722-983e48a2cd10?q=80&w=400"
-                }} 
-              />
-            ))}
+            {/* FIX: Added "Array.isArray" check here as a final safety barrier 
+            */}
+            {Array.isArray(topProviders) && topProviders.length > 0 ? (
+              topProviders.map((p) => (
+                <ServiceCard 
+                  key={p._id || p.id} 
+                  provider={{
+                    ...p,
+                    id: p._id || p.id,
+                    rating: p.avgRating || "0.0",
+                    totalReviews: p.totalReviews || 0,
+                    location: "Bhopal Hub",
+                    isVerified: true,
+                    image: p.image || "https://images.unsplash.com/photo-1540553016722-983e48a2cd10?q=80&w=400"
+                  }} 
+                />
+              ))
+            ) : (
+              <div className="col-span-full py-20 text-center opacity-50 font-black italic uppercase text-xs tracking-widest">
+                No experts available at this moment.
+              </div>
+            )}
           </div>
         )}
       </section>
