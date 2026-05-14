@@ -1,52 +1,42 @@
 const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
 const dotenv = require('dotenv');
+const cors = require('cors');
+const connectDB = require('./config/db');
 
-// 1. Config sabse pehle load karo
-dotenv.config();
-
+// Routes Import
 const authRoutes = require('./routes/authRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 
+// Configuration
+dotenv.config();
+connectDB();
+
 const app = express();
 
-// Middleware
-app.use(express.json());
-app.use(cors({
-  origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
+// Middlewares
+app.use(cors()); 
+app.use(express.json()); 
 
-// Routes
-app.use('/auth', authRoutes);
-app.use('/bookings', bookingRoutes);
-app.use('/admin', adminRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/bookings', bookingRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.get('/', (req, res) => {
-  res.send('TrustLocal API is running... 🚀');
+  res.send('TrustLocal Bhopal Hub API is Running... 🛡️');
+});
+
+// Error Handling Middleware 
+app.use((err, req, res, next) => {
+  const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  res.status(statusCode).json({
+    message: err.message,
+    stack: process.env.NODE_ENV === 'production' ? null : err.stack,
+  });
 });
 
 const PORT = process.env.PORT || 5000;
 
-const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGO_URI, {
-      dbName: "trustLocal"
-    });
-    console.log('✅ MongoDB Connected');
-
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-    });
-
-  } catch (err) {
-    console.error('❌ MongoDB Connection Error:', err);
-    process.exit(1);
-  }
-};
-
-// function call
-connectDB();
+app.listen(PORT, () => {
+  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT} ⚡`);
+});
